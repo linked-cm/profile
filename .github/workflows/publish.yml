@@ -1,0 +1,19 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    uses: linked-cm/.github/.github/workflows/publish.yml@v1
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
