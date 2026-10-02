@@ -1,0 +1,50 @@
+.root {
+  display: inline-block;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.trigger {
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--control-border, #d1d5db);
+  border-radius: var(--control-radius, 0.5rem);
+  background: var(--control-bg, #fff);
+  color: var(--control-fg, currentColor);
+  cursor: pointer;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--focus-ring, #2563eb);
+  outline-offset: 2px;
+}
+
+.trigger img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cropArea {
+  position: relative;
+  min-height: 360px;
+  background: #111;
+}
+
+.dialog {
+  width: min(92vw, 640px);
+  max-width: 640px;
+}
+
+.error {
+  color: var(--destructive, #b91c1c);
+}
