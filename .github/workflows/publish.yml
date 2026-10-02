@@ -1,8 +1,9 @@
 name: Publish
 
 on:
-  push:
-    branches: [main]
+  # Publishing stays opt-in while the extracted package API is incomplete.
+  # Restore the main-branch push trigger only when a release is approved.
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
