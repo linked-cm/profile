@@ -9,12 +9,14 @@ export const UserAccount = ns('UserAccount');
 export const enabledLocationServices = ns('enabledLocationServices');
 export const enabledNotifications = ns('enabledNotifications');
 export const deviceId = ns('deviceId');
+export const languagePreference = ns('languagePreference');
 
 export const profilePlus = {
   UserAccount,
   enabledLocationServices,
   enabledNotifications,
   deviceId,
+  languagePreference,
 };
 
 export const loadData = () =>
