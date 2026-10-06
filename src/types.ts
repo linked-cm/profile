@@ -35,7 +35,8 @@ export interface SelectedProfileImage {
 export type ImageSelector = () => Promise<SelectedProfileImage | undefined>;
 
 export interface ProfilePictureUploaderProps {
-  property: ProfilePictureSlot;
+  /** Defaults to the primary `profilePicture` slot. */
+  property?: ProfilePictureSlot;
   selectImage?: ImageSelector;
   onUpdate?: (croppedUrl: string) => void;
   thumbnailWidth?: number;
