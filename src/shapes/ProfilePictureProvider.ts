@@ -2,6 +2,8 @@ import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import formidable from 'formidable';
+import {BackendProvider} from '@_linked/server-utils/utils/BackendProvider';
+import {callable} from '@_linked/server-utils/utils/callable';
 import {ShapeProvider} from '@_linked/server-utils/utils/ShapeProvider';
 import {uploadSingleFileFromBuffer} from '@_linked/server-utils/utils/Upload';
 import {ProfilePicture} from './ProfilePicture.js';
@@ -80,8 +82,12 @@ function firstFile(value: formidable.File | formidable.File[] | undefined) {
  * calls it. `cleanupProfileGraph` still deletes linked RDF nodes without a
  * reference check.
  */
-export class ProfilePictureProvider extends ShapeProvider {
-  public shape = ProfilePicture;
+/**
+ * Generic backend lifecycle for HTTP upload and account cleanup. LinkedServer runs boot lifecycle
+ * hooks on generic providers; keeping these hooks here ensures the upload route exists before the
+ * generic `/api` fallback is installed.
+ */
+export class ProfileBackendProvider extends BackendProvider {
   private unsubscribeAccountRemoval?: () => void;
   private expiryTimer?: ReturnType<typeof setInterval>;
 
@@ -151,6 +157,20 @@ export class ProfilePictureProvider extends ShapeProvider {
     });
   }
 
+  dispose() {
+    this.unsubscribeAccountRemoval?.();
+    this.unsubscribeAccountRemoval = undefined;
+    if (this.expiryTimer) clearInterval(this.expiryTimer);
+    this.expiryTimer = undefined;
+    this.disposeRoutes();
+  }
+}
+
+/** Shape RPC provider for the crop step that follows an authenticated upload. */
+export class ProfilePictureProvider extends ShapeProvider {
+  public shape = ProfilePicture;
+
+  @callable('user')
   async cropProfilePicture(input: ProfilePictureCropInput): Promise<ProfilePictureCropResult> {
     purgeExpiredUploads();
     const account = this.request?.linkedAuth?.userAccount;
@@ -182,19 +202,10 @@ export class ProfilePictureProvider extends ShapeProvider {
     await replaceProfilePictureImages(
       personId,
       input.property,
-      account.accountOf[input.property],
       upload.originalUrl,
       croppedUrl,
     );
     pendingUploads.delete(input.uploadId);
     return {croppedUrl};
-  }
-
-  dispose() {
-    this.unsubscribeAccountRemoval?.();
-    this.unsubscribeAccountRemoval = undefined;
-    if (this.expiryTimer) clearInterval(this.expiryTimer);
-    this.expiryTimer = undefined;
-    this.disposeRoutes();
   }
 }

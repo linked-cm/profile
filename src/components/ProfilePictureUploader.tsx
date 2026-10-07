@@ -1,4 +1,4 @@
-import {useCallback, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import Cropper from 'react-easy-crop';
 import {Button} from '@_linked/primitives/components/Button';
 import {Dialog} from '@_linked/primitives/components/Dialog';
@@ -13,14 +13,19 @@ import type {
   ProfilePictureUploaderProps,
   SelectedProfileImage,
 } from '../types.js';
+import {profileImageUrl} from './profileImageUrl.js';
 import styles from './ProfilePictureUploader.module.css';
 
 type CropArea = {x: number; y: number; width: number; height: number};
 
-const pictureSelection = (picture: any) =>
-  picture?.select((value: any) => ({
-    cropped: value.cropped?.contentUrl,
-    original: value.image?.contentUrl,
+const pictureSelection = (profilePicture: any) =>
+  profilePicture.select((picture: any) => ({
+    cropped: picture.cropped.select((image: any) => ({
+      contentUrl: image.contentUrl,
+    })),
+    image: picture.image.select((image: any) => ({
+      contentUrl: image.contentUrl,
+    })),
   }));
 
 const query = Person.select((person) => ({
@@ -58,8 +63,19 @@ export const ProfilePictureUploader = linkedComponent<
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
-  const current = props[property];
-  const currentUrl = current?.cropped || current?.original;
+  const current = {
+    profilePicture: props.profilePicture,
+    profilePicture2: props.profilePicture2,
+    profilePicture3: props.profilePicture3,
+    profilePicture4: props.profilePicture4,
+    profilePicture5: props.profilePicture5,
+    profilePicture6: props.profilePicture6,
+  }[property];
+  const currentUrl = profileImageUrl(current?.cropped) || profileImageUrl(current?.image);
+  const [displayUrl, setDisplayUrl] = useState<string | undefined>(currentUrl);
+
+  // Keep the optimistic preview aligned when the linked query or selected slot changes.
+  useEffect(() => setDisplayUrl(currentUrl), [currentUrl, property]);
 
   // Normalize on the server before the crop dialog opens. The cropper then uses `originalUrl`.
   const uploadNormalized = async (image: SelectedProfileImage) => {
@@ -113,7 +129,9 @@ export const ProfilePictureUploader = linkedComponent<
         crop: cropArea,
       });
       setOpen(false);
+      setDisplayUrl(result.croppedUrl);
       onUpdate?.(result.croppedUrl);
+      props._refresh?.();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Image upload failed');
     } finally {
@@ -144,7 +162,7 @@ export const ProfilePictureUploader = linkedComponent<
         disabled={busy}
         aria-label={props['aria-label'] || 'Choose profile picture'}
       >
-        {busy && !open ? <Spinner /> : renderAction || (currentUrl ? <img src={currentUrl} alt="Profile" /> : uploadIcon || <span>+</span>)}
+        {busy && !open ? <Spinner /> : renderAction || (displayUrl ? <img src={displayUrl} alt="Profile" /> : uploadIcon || <span>+</span>)}
       </button>
       {error && !open && <p className={styles.error} role="alert">{error}</p>}
 

@@ -21,17 +21,35 @@ function getNodeId(value: unknown): string | undefined {
 
 export async function ensureProfilePictureSlot(
   personId: string,
-  property: ProfilePictureSlot,
-  currentValue?: unknown
+  property: ProfilePictureSlot
 ): Promise<string> {
-  const existingId = getNodeId(currentValue);
+  // The authenticated account only guarantees an `accountOf` reference; it
+  // does not preload profile-picture slots. Read the canonical graph before
+  // deciding whether this is a first upload or a replacement.
+  const person = await Person.select((value) => ({
+    picture: value[property],
+  })).for(personId) as {picture?: unknown} | undefined;
+  const existingId = getNodeId(person?.picture);
   if (existingId) return existingId;
 
   const picture = await ProfilePicture.create({});
   const pictureId = getNodeId(picture);
   if (!pictureId) throw new Error('ProfilePicture.create returned no id');
 
-  await Person.update({[property]: picture} as never).for(personId);
+  // Persist only a node reference here. The object returned by `create()` is a
+  // query result, not a live Shape, and must not become a nested-node update.
+  await Person.update({[property]: {id: pictureId}} as never).for(personId);
+
+  // Do not report a successful crop when the new picture was not attached to
+  // the person. Without this check the image nodes exist, but the UI has no
+  // graph path through which it can query them.
+  const updated = await Person.select((person) => ({
+    picture: person[property],
+  })).for(personId) as {picture?: unknown} | undefined;
+  if (getNodeId(updated?.picture) !== pictureId) {
+    await ProfilePicture.delete(pictureId);
+    throw new Error('Profile picture was created but could not be linked to the person');
+  }
   return pictureId;
 }
 
@@ -48,11 +66,10 @@ export async function ensureProfilePictureSlot(
 export async function replaceProfilePictureImages(
   personId: string,
   property: ProfilePictureSlot,
-  currentValue: unknown,
   originalUrl: string,
   croppedUrl: string,
 ) {
-  const pictureId = await ensureProfilePictureSlot(personId, property, currentValue);
+  const pictureId = await ensureProfilePictureSlot(personId, property);
   const existing = await ProfilePicture.select((value) => ({
     image: value.image,
     cropped: value.cropped,

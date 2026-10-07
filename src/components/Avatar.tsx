@@ -1,6 +1,7 @@
 import type {HTMLAttributes, ReactNode} from 'react';
 import {linkedComponent} from '../package.js';
 import {Person} from '../shapes/Person.js';
+import {profileImageUrl} from './profileImageUrl.js';
 import styles from './Avatar.module.css';
 
 export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
@@ -24,7 +25,7 @@ const query = Person.select((person) => ({
 export const Avatar = linkedComponent<typeof query, AvatarProps>(
   query,
   ({cropped, original, givenName, overwriteSource, fallback, size = 'medium', className, ...rest}: any) => {
-    const source = overwriteSource || cropped || original;
+    const source = overwriteSource || profileImageUrl(cropped) || profileImageUrl(original);
     const pixels = typeof size === 'number' ? size : size === 'small' ? 48 : size === 'large' ? 96 : 64;
     if (!source && fallback) return <>{fallback}</>;
 
