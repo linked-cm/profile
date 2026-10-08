@@ -13,9 +13,13 @@
     "jsx": "react-jsx",
     "types": ["node"]
   },
+  "files": [
+    "./src/index.ts"
+  ],
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/*.tsx",
+    "./src/backend.ts"
   ],
   "exclude": [
     "**/*.test.ts",
