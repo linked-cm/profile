@@ -1,1 +1,4 @@
-export {ProfilePictureProvider} from './shapes/ProfilePictureProvider.js';
+export {
+  ProfileBackendProvider,
+  ProfilePictureProvider,
+} from './shapes/ProfilePictureProvider.js';

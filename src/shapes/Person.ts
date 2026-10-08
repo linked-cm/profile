@@ -2,6 +2,7 @@ import {literalProperty, objectProperty} from '@_linked/core/shapes/SHACL';
 import {schema} from '@_linked/schema/ontologies/schema';
 import {Person as SchemaPerson} from '@_linked/schema/shapes/Person';
 import {profilePics} from '../ontologies/profile-pics.js';
+import {profilePlus} from '../ontologies/profile-plus.js';
 import {linkedShape} from '../package.js';
 import {ProfilePicture} from './ProfilePicture.js';
 
@@ -41,5 +42,16 @@ export class Person extends SchemaPerson {
   })
   get profileSetupCompleted(): boolean {
     return false;
+  }
+
+  // Keep the legacy IRI so existing profile preferences remain readable while
+  // ownership moves from profile-plus into this package.
+  @literalProperty({
+    path: profilePlus.languagePreference,
+    required: false,
+    maxCount: 1,
+  })
+  get languagePreference(): string {
+    return '';
   }
 }
