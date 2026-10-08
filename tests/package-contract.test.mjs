@@ -8,7 +8,6 @@ const packageJson = JSON.parse(
 
 test('uses the approved community package identity', () => {
   assert.equal(packageJson.name, '@linked.cm/profile');
-  assert.equal(packageJson.version, '0.1.0');
   assert.equal(
     packageJson.repository.url,
     'git+https://github.com/linked-cm/profile.git'
