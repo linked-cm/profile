@@ -53,39 +53,35 @@ function firstFile(value: formidable.File | formidable.File[] | undefined) {
 }
 
 /**
- * Server-only request boundary for profile pictures. The linked loader
- * instantiates this from `backend.ts`. Do not import it from a client entry.
+ * HTTP upload route and account-removal cleanup. LinkedServer runs boot
+ * lifecycle hooks on generic providers, so the route is registered here,
+ * before the generic `/api` fallback. Do not import this class from a client entry.
  *
- * Upload and crop both require `linkedAuth.userAccount`. The person id is
- * taken from `accountOf`, never from the client, and the slot must be one of
- * the six fixed properties. Crop also rejects a pending upload whose
- * `accountId` or slot is not the caller's.
+ * Upload and crop both require `linkedAuth.userAccount`. The person id comes
+ * from `accountOf`, never from the client, and the slot must be one of the
+ * six fixed properties. Crop rejects a pending upload whose account or slot
+ * is not the caller's.
  *
  * `uploadId` and the storage filename are `randomUUID()` values. The client
- * filename is not used as a path, so a caller cannot choose a storage name
+ * filename is not a storage path, so a caller cannot choose a storage name
  * or address another account's upload.
  *
- * Upload normalizes the bytes and stores that JPEG, but it does not change
- * the picture graph. The crop UI then loads `originalUrl`, whose dimensions
- * are the returned `width` and `height`, and sends a rectangle in that space.
+ * Upload normalizes the bytes and stores that JPEG. It does not change the
+ * picture graph. The crop UI loads `originalUrl`, whose dimensions are the
+ * returned `width` and `height`, and sends a rectangle in that pixel space.
  * Graph links are written only after that crop succeeds. The previous
- * ImageObject nodes for the slot are deleted then. Their stored files are not:
- * the upload helper returns a public URL, not the store path
+ * ImageObject nodes for the slot are deleted then. Their stored files are
+ * not: the upload helper returns a public URL, not the store path
  * `LinkedFileStorage.deleteFile` requires. A cancelled crop leaves the
- * normalized file in storage until something else removes it.
+ * normalized file in storage.
  *
- * The normalized bytes stay in `pendingUploads` for 15 minutes so crop can
- * reuse them. See that map for the single-process limit.
+ * Normalized bytes stay in `pendingUploads` for 15 minutes. That map is
+ * process-local, so another instance cannot crop an upload created here.
  *
- * Account removal uses `onAccountWillBeRemoved`. The installed
- * `@_linked/auth` next to PeaceGame returns an unsubscribe function; `dispose`
- * calls it. `cleanupProfileGraph` still deletes linked RDF nodes without a
- * reference check.
- */
-/**
- * Generic backend lifecycle for HTTP upload and account cleanup. LinkedServer runs boot lifecycle
- * hooks on generic providers; keeping these hooks here ensures the upload route exists before the
- * generic `/api` fallback is installed.
+ * `onAccountWillBeRemoved` may return an unsubscribe function or void.
+ * `dispose` calls the function when one was returned. `cleanupProfileGraph`
+ * deletes linked RDF nodes without checking whether another subject still
+ * references them.
  */
 export class ProfileBackendProvider extends BackendProvider {
   private unsubscribeAccountRemoval?: () => void;

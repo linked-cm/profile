@@ -19,7 +19,7 @@ const query = Person.select((person) => ({
 /**
  * Primary picture for any Person. Source order is `overwriteSource`, then the
  * cropped image, then the original, then `fallback` or the first letter of
- * `givenName`. It only reads that query — no app, game, or native UI.
+ * `givenName`. It only reads that query.
  */
 
 export const Avatar = linkedComponent<typeof query, AvatarProps>(
