@@ -4,7 +4,8 @@ function directImageUrl(value: unknown): string | undefined {
 
   const result = value as Record<string, unknown>;
   for (const key of ['contentUrl', 'profilePictureCropped', 'profilePictureOriginal']) {
-    if (typeof result[key] === 'string') return result[key];
+    const field = result[key];
+    if (typeof field === 'string') return field;
   }
 }
 
