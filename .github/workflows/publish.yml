@@ -8,10 +8,9 @@
 name: Publish
 
 on:
-  # Publishing stays opt-in while the extracted package API is incomplete.
-  # The current CLI template triggers this on push to main. Restore that trigger
-  # only when a release is approved.
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
