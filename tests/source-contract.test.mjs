@@ -109,3 +109,14 @@ test('sweeps expired uploads and unsubscribes account removal', () => {
   assert.match(provider, /purgeExpiredUploads/);
   assert.match(provider, /unsubscribeAccountRemoval\?\.\(\)/);
 });
+
+test('sends the upload through auth 3 refresh-and-retry, not a bare fetch', () => {
+  assert.match(uploader, /import \{withAuthRetry\} from '@_linked\/auth\/utils\/authClient'/);
+  assert.match(uploader, /const uploadFetch = withAuthRetry\(/);
+  assert.match(uploader, /await uploadFetch\(\s*`\$\{root\}\/api\/profile-picture\/upload/);
+  assert.doesNotMatch(uploader, /await fetch\(/);
+});
+
+test('keeps the account-removal unsubscribe auth 3 returns', () => {
+  assert.match(provider, /this\.unsubscribeAccountRemoval = onAccountWillBeRemoved</);
+});

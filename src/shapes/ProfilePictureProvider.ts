@@ -78,10 +78,9 @@ function firstFile(value: formidable.File | formidable.File[] | undefined) {
  * Normalized bytes stay in `pendingUploads` for 15 minutes. That map is
  * process-local, so another instance cannot crop an upload created here.
  *
- * `onAccountWillBeRemoved` may return an unsubscribe function or void.
- * `dispose` calls the function when one was returned. `cleanupProfileGraph`
- * deletes linked RDF nodes without checking whether another subject still
- * references them.
+ * `onAccountWillBeRemoved` returns an unsubscribe function, which `dispose`
+ * calls. `cleanupProfileGraph` deletes linked RDF nodes without checking
+ * whether another subject still references them.
  */
 export class ProfileBackendProvider extends BackendProvider {
   private unsubscribeAccountRemoval?: () => void;
@@ -89,11 +88,10 @@ export class ProfileBackendProvider extends BackendProvider {
 
   setupBeforeControllers() {
     this.unsubscribeAccountRemoval?.();
-    const unsubscribe = onAccountWillBeRemoved<UserAccountData>(async (account) => {
+    // Auth awaits this before deleting the account; a failure here stops the removal.
+    this.unsubscribeAccountRemoval = onAccountWillBeRemoved<UserAccountData>(async (account) => {
       await cleanupProfileGraph(account);
     });
-    // Auth 1.5.0 exists with both callback-returning and void-returning APIs.
-    if (typeof unsubscribe === 'function') this.unsubscribeAccountRemoval = unsubscribe;
     if (this.expiryTimer) clearInterval(this.expiryTimer);
     const timer = setInterval(() => purgeExpiredUploads(), EXPIRY_SWEEP_MS);
     timer.unref?.();
