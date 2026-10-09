@@ -78,7 +78,7 @@
     }
   },
   "dependencies": {
-    "@_linked/auth": "^1.2.4",
+    "@_linked/auth": "^3.1.0",
     "@_linked/core": "^2.27.0",
     "@_linked/primitives": "^1.8.0",
     "@_linked/react": "^2.0.0",

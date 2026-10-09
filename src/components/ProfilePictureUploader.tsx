@@ -4,6 +4,7 @@ import {Button} from '@_linked/primitives/components/Button';
 import {Dialog} from '@_linked/primitives/components/Dialog';
 import {Spinner} from '@_linked/primitives/components/Spinner';
 import {useAuth} from '@_linked/auth/hooks/useAuth';
+import {withAuthRetry} from '@_linked/auth/utils/authClient';
 import {linkedComponent} from '../package.js';
 import {Person} from '../shapes/Person.js';
 import {ProfilePicture} from '../shapes/ProfilePicture.js';
@@ -17,6 +18,8 @@ import {profileImageUrl} from './profileImageUrl.js';
 import styles from './ProfilePictureUploader.module.css';
 
 type CropArea = {x: number; y: number; width: number; height: number};
+
+const uploadFetch = withAuthRetry((url, init) => fetch(url, init));
 
 const pictureSelection = (profilePicture: any) =>
   profilePicture.select((picture: any) => ({
@@ -90,7 +93,10 @@ export const ProfilePictureUploader = linkedComponent<
       const data = new FormData();
       data.append('file', image.file, image.file.name);
       const root = String(process.env.SITE_ROOT || '').replace(/\/$/, '');
-      const response = await fetch(
+      // Auth 3 keeps the access token in memory and refreshes it every few minutes. After a
+      // server-rendered load there is none yet, and the httpOnly cookie authenticates the upload.
+      // withAuthRetry refreshes an expired token first and retries once after a 401, like Server.call.
+      const response = await uploadFetch(
         `${root}/api/profile-picture/upload?property=${encodeURIComponent(property)}`,
         {method: 'POST', headers: token ? {Authorization: `Bearer ${token}`} : {}, body: data}
       );
