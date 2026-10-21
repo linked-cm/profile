@@ -1,5 +1,18 @@
 # @linked.cm/profile
 
+## 0.5.0
+
+### Minor Changes
+
+- [#11](https://github.com/linked-cm/profile/pull/11) [`94c713a`](https://github.com/linked-cm/profile/commit/94c713a91b623ca20c29b288049a6e94d914c8df) Thanks [@abdipramana](https://github.com/abdipramana)! - `ProfilePictureUploader` now accepts an optional `uploadFetch` prop for hosts
+  whose browser-compatible `fetch` cannot serialize a `FormData` image upload.
+  Pass a fetch-compatible function that returns a `Response`; browser consumers
+  can omit the prop and continue using normal `fetch`.
+
+  ```tsx
+  <ProfilePictureUploader of={person} uploadFetch={nativeUploadFetch} />
+  ```
+
 ## 0.4.0
 
 ### Minor Changes
