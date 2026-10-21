@@ -110,8 +110,20 @@ test('sweeps expired uploads and unsubscribes account removal', () => {
   assert.match(provider, /unsubscribeAccountRemoval\?\.\(\)/);
 });
 
+test('accepts a host upload transport for native FormData compatibility', () => {
+  assert.match(uploader, /uploadFetch: hostUploadFetch/);
+  assert.match(uploader, /\(hostUploadFetch \|\| fetch\)\(url, init\)/);
+  assert.match(
+    uploader,
+    /data\.append\('file', image\.file, filename\)/
+  );
+});
+
 test('sends the upload through auth 3 refresh-and-retry, not a bare fetch', () => {
-  assert.match(uploader, /import \{withAuthRetry\} from '@_linked\/auth\/utils\/authClient'/);
+  assert.match(
+    uploader,
+    /import \{\s*withAuthRetry\s*\} from '@_linked\/auth\/utils\/authClient'/
+  );
   assert.match(uploader, /const uploadFetch = withAuthRetry\(/);
   assert.match(uploader, /await uploadFetch\(\s*`\$\{root\}\/api\/profile-picture\/upload/);
   assert.doesNotMatch(uploader, /await fetch\(/);

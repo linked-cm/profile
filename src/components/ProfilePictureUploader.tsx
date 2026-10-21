@@ -1,25 +1,30 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import { useAuth } from '@_linked/auth/hooks/useAuth';
+import { withAuthRetry } from '@_linked/auth/utils/authClient';
+import { Button } from '@_linked/primitives/components/Button';
+import { Dialog } from '@_linked/primitives/components/Dialog';
+import { Spinner } from '@_linked/primitives/components/Spinner';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Cropper from 'react-easy-crop';
-import {Button} from '@_linked/primitives/components/Button';
-import {Dialog} from '@_linked/primitives/components/Dialog';
-import {Spinner} from '@_linked/primitives/components/Spinner';
-import {useAuth} from '@_linked/auth/hooks/useAuth';
-import {withAuthRetry} from '@_linked/auth/utils/authClient';
-import {linkedComponent} from '../package.js';
-import {Person} from '../shapes/Person.js';
-import {ProfilePicture} from '../shapes/ProfilePicture.js';
+import { linkedComponent } from '../package.js';
+import { Person } from '../shapes/Person.js';
+import { ProfilePicture } from '../shapes/ProfilePicture.js';
 import type {
   ProfilePictureCropResult,
   ProfilePictureUploadResult,
   ProfilePictureUploaderProps,
   SelectedProfileImage,
 } from '../types.js';
-import {profileImageUrl} from './profileImageUrl.js';
+import { profileImageUrl } from './profileImageUrl.js';
 import styles from './ProfilePictureUploader.module.css';
 
-type CropArea = {x: number; y: number; width: number; height: number};
+type CropArea = { x: number; y: number; width: number; height: number };
 
-const uploadFetch = withAuthRetry((url, init) => fetch(url, init));
+function imageFilename(image: SelectedProfileImage): string {
+  if (image.filename) return image.filename;
+  return image.file instanceof File && image.file.name
+    ? image.file.name
+    : `profile-${crypto.randomUUID()}.jpg`;
+}
 
 const pictureSelection = (profilePicture: any) =>
   profilePicture.select((picture: any) => ({
@@ -47,6 +52,7 @@ export const ProfilePictureUploader = linkedComponent<
   const {
     property = 'profilePicture',
     selectImage,
+    uploadFetch: hostUploadFetch,
     onUpdate,
     thumbnailWidth = 169,
     thumbnailHeight,
@@ -56,10 +62,13 @@ export const ProfilePictureUploader = linkedComponent<
     uploadIcon,
     renderAction,
   } = props;
+  const uploadFetch = withAuthRetry((url, init) =>
+    (hostUploadFetch || fetch)(url, init)
+  );
   const auth = useAuth<any>();
   const inputRef = useRef<HTMLInputElement>(null);
   const [upload, setUpload] = useState<ProfilePictureUploadResult>();
-  const [crop, setCrop] = useState({x: 0, y: 0});
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [cropArea, setCropArea] = useState<CropArea>();
   const [open, setOpen] = useState(false);
@@ -74,33 +83,59 @@ export const ProfilePictureUploader = linkedComponent<
     profilePicture5: props.profilePicture5,
     profilePicture6: props.profilePicture6,
   }[property];
-  const currentUrl = profileImageUrl(current?.cropped) || profileImageUrl(current?.image);
+  const currentUrl =
+    profileImageUrl(current?.cropped) || profileImageUrl(current?.image);
   const [displayUrl, setDisplayUrl] = useState<string | undefined>(currentUrl);
 
   // Keep the optimistic preview aligned when the linked query or selected slot changes.
   useEffect(() => setDisplayUrl(currentUrl), [currentUrl, property]);
+
+  // The menu is fixed at z-index 1100. The overlay reads these tokens from the
+  // document, and it is portaled separately from the dialog, so a class on the
+  // dialog cannot reach it.
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    root.style.setProperty('--dialog-overlay-bg', 'rgba(0, 0, 0, 0.8)');
+    root.style.setProperty('--z-modal', '1200');
+    return () => {
+      root.style.removeProperty('--dialog-overlay-bg');
+      root.style.removeProperty('--z-modal');
+    };
+  }, [open]);
 
   // Normalize on the server before the crop dialog opens. The cropper then uses `originalUrl`.
   const uploadNormalized = async (image: SelectedProfileImage) => {
     setBusy(true);
     setError(undefined);
     setUpload(undefined);
-    setCrop({x: 0, y: 0});
+    setCrop({ x: 0, y: 0 });
     setZoom(1);
     setCropArea(undefined);
     try {
       const token = await auth.getAccessToken?.();
       const data = new FormData();
-      data.append('file', image.file, image.file.name);
+      const filename = imageFilename(image);
+      data.append('file', image.file, filename);
       const root = String(process.env.SITE_ROOT || '').replace(/\/$/, '');
       // Auth 3 keeps the access token in memory and refreshes it every few minutes. After a
       // server-rendered load there is none yet, and the httpOnly cookie authenticates the upload.
       // withAuthRetry refreshes an expired token first and retries once after a 401, like Server.call.
       const response = await uploadFetch(
-        `${root}/api/profile-picture/upload?property=${encodeURIComponent(property)}`,
-        {method: 'POST', headers: token ? {Authorization: `Bearer ${token}`} : {}, body: data}
+        `${root}/api/profile-picture/upload?property=${encodeURIComponent(
+          property
+        )}`,
+        {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: data,
+        }
       );
-      if (!response.ok) throw new Error((await response.json().catch(() => null))?.error || 'Image upload failed');
+      if (!response.ok)
+        throw new Error(
+          (await response.json().catch(() => null))?.error ||
+            'Image upload failed'
+        );
       const uploaded = (await response.json()) as ProfilePictureUploadResult;
       setUpload(uploaded);
       setOpen(true);
@@ -145,7 +180,10 @@ export const ProfilePictureUploader = linkedComponent<
     }
   };
 
-  const onCropComplete = useCallback((_percent: CropArea, pixels: CropArea) => setCropArea(pixels), []);
+  const onCropComplete = useCallback(
+    (_percent: CropArea, pixels: CropArea) => setCropArea(pixels),
+    []
+  );
 
   return (
     <div className={[styles.root, className].filter(Boolean).join(' ')}>
@@ -156,26 +194,39 @@ export const ProfilePictureUploader = linkedComponent<
         accept="image/jpeg,image/png,image/webp"
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file) void uploadNormalized({file});
+          if (file) void uploadNormalized({ file });
           event.target.value = '';
         }}
       />
       <button
         type="button"
         className={styles.trigger}
-        style={{width: thumbnailWidth, height: thumbnailHeight, aspectRatio}}
+        style={{ width: thumbnailWidth, height: thumbnailHeight, aspectRatio }}
         onClick={chooseImage}
         disabled={busy}
         aria-label={props['aria-label'] || 'Choose profile picture'}
       >
-        {busy && !open ? <Spinner /> : renderAction || (displayUrl ? <img src={displayUrl} alt="Profile" /> : uploadIcon || <span>+</span>)}
+        {busy && !open ? (
+          <Spinner />
+        ) : (
+          renderAction ||
+          (displayUrl ? (
+            <img src={displayUrl} alt="Profile" />
+          ) : (
+            uploadIcon || <span>+</span>
+          ))
+        )}
       </button>
-      {error && !open && <p className={styles.error} role="alert">{error}</p>}
+      {error && !open && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Content className={styles.dialog} hideCloseIcon>
           <Dialog.Header>
-            <Dialog.Title>Crop profile picture</Dialog.Title>
+            <Dialog.Title>Crop your profile picture</Dialog.Title>
           </Dialog.Header>
           <div className={styles.cropArea}>
             {upload?.originalUrl && (
@@ -190,10 +241,27 @@ export const ProfilePictureUploader = linkedComponent<
               />
             )}
           </div>
-          {error && <p className={styles.error} role="alert">{error}</p>}
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
           <Dialog.Footer>
-            <Button variant="outline" type="button" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button>
-            <Button type="button" onClick={confirmCrop} disabled={busy || !cropArea}>
+            <Button
+              variant="outline"
+              className={styles.action}
+              type="button"
+              onClick={() => setOpen(false)}
+              disabled={busy}
+            >
+              Cancel
+            </Button>
+            <Button
+              className={styles.action}
+              type="button"
+              onClick={confirmCrop}
+              disabled={busy || !cropArea}
+            >
               {busy ? <Spinner /> : confirmText}
             </Button>
           </Dialog.Footer>

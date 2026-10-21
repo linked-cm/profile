@@ -36,13 +36,24 @@
 
 .cropArea {
   position: relative;
-  min-height: 360px;
+  min-height: 520px;
+  margin-top: 8px;
+  margin-bottom: var(--modal-gap, 16px);
   background: #111;
 }
 
 .dialog {
-  width: min(92vw, 640px);
-  max-width: 640px;
+  /* The shared dialog hard-caps width at 500px and height at 85vh. */
+  width: min(94vw, 880px) !important;
+  max-width: min(94vw, 880px) !important;
+  max-height: 92vh !important;
+  z-index: 1201 !important;
+  --dialog-padding: 20px;
+  --heading-5-color: var(--main-color, #032265);
+}
+
+.action {
+  min-width: 80px;
 }
 
 .error {
