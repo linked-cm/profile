@@ -23,7 +23,13 @@ export function isProfilePictureSlot(value: string): value is ProfilePictureSlot
 
 /** Bytes to upload. `previewUrl` is set when the host already has a display URL. */
 export interface SelectedProfileImage {
-  file: File;
+  /**
+   * Image bytes from this page. On iPhone, a `File` created with `new File()`
+   * is not a `Blob`, and `FormData.append` rejects it.
+   */
+  file: Blob;
+  /** Multipart name. Needed when `file` has no `File.name`. */
+  filename?: string;
   previewUrl?: string;
 }
 
@@ -38,6 +44,11 @@ export interface ProfilePictureUploaderProps {
   /** Defaults to the primary `profilePicture` slot. */
   property?: ProfilePictureSlot;
   selectImage?: ImageSelector;
+  /**
+   * Optional host transport for platforms that cannot send a FormData upload
+   * with their browser-compatible fetch implementation.
+   */
+  uploadFetch?: typeof fetch;
   onUpdate?: (croppedUrl: string) => void;
   thumbnailWidth?: number;
   thumbnailHeight?: number;

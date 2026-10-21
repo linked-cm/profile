@@ -19,7 +19,12 @@ import styles from './ProfilePictureUploader.module.css';
 
 type CropArea = { x: number; y: number; width: number; height: number };
 
-const uploadFetch = withAuthRetry((url, init) => fetch(url, init));
+function imageFilename(image: SelectedProfileImage): string {
+  if (image.filename) return image.filename;
+  return image.file instanceof File && image.file.name
+    ? image.file.name
+    : `profile-${crypto.randomUUID()}.jpg`;
+}
 
 const pictureSelection = (profilePicture: any) =>
   profilePicture.select((picture: any) => ({
@@ -47,6 +52,7 @@ export const ProfilePictureUploader = linkedComponent<
   const {
     property = 'profilePicture',
     selectImage,
+    uploadFetch: hostUploadFetch,
     onUpdate,
     thumbnailWidth = 169,
     thumbnailHeight,
@@ -56,6 +62,9 @@ export const ProfilePictureUploader = linkedComponent<
     uploadIcon,
     renderAction,
   } = props;
+  const uploadFetch = withAuthRetry((url, init) =>
+    (hostUploadFetch || fetch)(url, init)
+  );
   const auth = useAuth<any>();
   const inputRef = useRef<HTMLInputElement>(null);
   const [upload, setUpload] = useState<ProfilePictureUploadResult>();
@@ -106,7 +115,8 @@ export const ProfilePictureUploader = linkedComponent<
     try {
       const token = await auth.getAccessToken?.();
       const data = new FormData();
-      data.append('file', image.file, image.file.name);
+      const filename = imageFilename(image);
+      data.append('file', image.file, filename);
       const root = String(process.env.SITE_ROOT || '').replace(/\/$/, '');
       // Auth 3 keeps the access token in memory and refreshes it every few minutes. After a
       // server-rendered load there is none yet, and the httpOnly cookie authenticates the upload.

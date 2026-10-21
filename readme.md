@@ -24,6 +24,8 @@ The uploader posts the chosen file to `POST /api/profile-picture/upload`. The se
 
 `selectImage` is optional. When a host supplies it, the package never imports that host's camera or file picker. Without it, the uploader uses a browser file input.
 
+`uploadFetch` is also optional. Use it only when a native host cannot serialize `FormData` through its patched `fetch`; the callback receives the same URL and request options as `fetch` and must return a standard `Response`. Browser callers should omit it and retain normal browser `fetch` behavior.
+
 Pending originals live in memory on the server process that accepted the upload, for 15 minutes. Another process cannot crop them.
 
 ## Avatar
