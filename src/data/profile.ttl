@@ -1,0 +1,63 @@
+@prefix profile: <https://linked.cm/ont/profile/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sioc: <http://rdfs.org/sioc/ns#> .
+
+profile:
+    a owl:Ontology ;
+    dcterms:description "Reusable Linked profile shapes, profile-picture UI, and server contracts."@en ;
+    dcterms:title "Linked profile"@en .
+
+profile:ProfilePicture
+    a owl:Class .
+
+profile:ProfilePictureSet
+    a owl:Class .
+
+profile:UserAccount
+    a owl:Class ;
+    rdfs:subClassOf sioc:UserAccount .
+
+profile:crop
+    a owl:ObjectProperty .
+
+profile:deviceId
+    a owl:DatatypeProperty ;
+    rdfs:comment "Transitional PeaceGame device identity retained for data compatibility."@en .
+
+profile:enabledLocationServices
+    a owl:DatatypeProperty .
+
+profile:enabledNotifications
+    a owl:DatatypeProperty .
+
+profile:hasProfilePicture
+    a owl:ObjectProperty .
+
+profile:hasProfilePicture2
+    a owl:ObjectProperty .
+
+profile:hasProfilePicture3
+    a owl:ObjectProperty .
+
+profile:hasProfilePicture4
+    a owl:ObjectProperty .
+
+profile:hasProfilePicture5
+    a owl:ObjectProperty .
+
+profile:hasProfilePicture6
+    a owl:ObjectProperty .
+
+profile:hasProfilePictures
+    a owl:ObjectProperty .
+
+profile:image
+    a owl:ObjectProperty .
+
+profile:languagePreference
+    a owl:DatatypeProperty .
+
+profile:profileSetupCompleted
+    a owl:DatatypeProperty .
