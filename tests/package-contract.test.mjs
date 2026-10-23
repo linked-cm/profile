@@ -20,6 +20,7 @@ test('exports only the approved public entry points', () => {
     './backend',
     './components/Avatar',
     './components/ProfilePictureUploader',
+    './ontologies/profile',
     './ontologies/profile-pics',
     './shapes/Person',
     './shapes/ProfilePicture',

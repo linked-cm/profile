@@ -25,10 +25,10 @@
   ],
   "scripts": {
     "start": "npm exec linked dev",
-    "test": "node --test tests/*.test.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "build": "rimraf ./lib && npm run build-esm && npm run copy-to-lib",
     "build-esm": "echo \"compiling ESM\" && rimraf ./lib/esm && tsc -p tsconfig-esm.json",
-    "copy-to-lib": "echo 'copying CSS + JSON assets to lib folder' && copyfiles -u 1 'src/**/*.css' 'src/**/*.json' lib/esm"
+    "copy-to-lib": "echo 'copying CSS + Turtle assets to lib folder' && copyfiles -u 1 'src/**/*.css' 'src/**/*.ttl' lib/esm"
   },
   "keywords": [
     "linked",
@@ -61,6 +61,10 @@
       "types": "./lib/esm/components/ProfilePictureUploader.d.ts",
       "import": "./lib/esm/components/ProfilePictureUploader.js"
     },
+    "./ontologies/profile": {
+      "types": "./lib/esm/ontologies/profile.d.ts",
+      "import": "./lib/esm/ontologies/profile.js"
+    },
     "./ontologies/profile-pics": {
       "types": "./lib/esm/ontologies/profile-pics.d.ts",
       "import": "./lib/esm/ontologies/profile-pics.js"
@@ -79,20 +83,20 @@
   },
   "dependencies": {
     "@_linked/auth": "^3.1.0",
-    "@_linked/core": "^2.27.0",
+    "@_linked/core": "^2.37.2",
     "@_linked/primitives": "^1.8.0",
     "@_linked/react": "^2.0.0",
-    "@_linked/schema": "^1.5.0",
+    "@_linked/schema": "^1.6.0",
     "@_linked/server-utils": "^1.11.0",
-    "@_linked/sioc": "^1.4.0",
-    "@_linked/xsd": "~1.0",
+    "@_linked/sioc": "^1.5.0",
+    "@_linked/xsd": "^1.3.1",
     "formidable": "^3.5.4",
     "react": "^19.0.0",
     "react-easy-crop": "^5.5.6",
-    "sharp": "^0.34.4"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "@_linked/cli": "^1.2",
+    "@_linked/cli": "^1.54.0",
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
     "@types/node": "^22.13.14",
