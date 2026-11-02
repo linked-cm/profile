@@ -7,6 +7,10 @@ const ontology = await readFile(
   new URL('../src/ontologies/profile.ts', import.meta.url),
   'utf8'
 );
+const ontologyData = await readFile(
+  new URL('../src/ontologies/profile.data.ts', import.meta.url),
+  'utf8'
+);
 const packageSource = await readFile(
   new URL('../src/package.ts', import.meta.url),
   'utf8'
@@ -38,10 +42,9 @@ const imageUrlModule = await import(
 );
 const {profileImageUrl} = imageUrlModule;
 
-test('mints every term in the one profile ontology and keeps both old namespaces as aliases', () => {
-  assert.match(ontology, /createNameSpace\('https:\/\/linked\.cm\/ont\/profile\/'\)/);
-  assert.match(ontology, /legacyProfilePicsNs = createNameSpace\('http:\/\/lincd\.org\/ont\/profile-pics\/'\)/);
-  assert.match(ontology, /legacyProfilePlusNs = createNameSpace\('http:\/\/lincd\.org\/ont\/profile-plus\/'\)/);
+test('mints every term in the one profile ontology, with no legacy namespace', () => {
+  assert.match(ontologyData, /createNameSpace\('https:\/\/linked\.cm\/ont\/profile\/'\)/);
+  assert.doesNotMatch(ontology + ontologyData, /lincd\.org|legacy/);
 });
 
 test('uses the new package identity for Shape registration', () => {

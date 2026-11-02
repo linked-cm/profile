@@ -13,8 +13,7 @@ import {existsSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import * as profile from '../lib/esm/ontologies/profile.js';
-import * as pics from '../lib/esm/ontologies/profile-pics.js';
-import * as plus from '../lib/esm/ontologies/profile-plus.js';
+import {_ontologyResource, loadData} from '../lib/esm/ontologies/profile.data.js';
 import '../lib/esm/shapes/index.js';
 import {packageName} from '../lib/esm/package.js';
 
@@ -35,25 +34,23 @@ await registerInstalledOntologies([
   packageDir('@_linked/xsd', 'shapes/Boolean'),
   fileURLToPath(new URL('..', import.meta.url)),
 ]);
-const termIris = Object.values(profile.profile).map((term) => term.id);
+const termIris = Object.values(profile).map((term) => term.id);
 
 test('mints every term under https://linked.cm/ont/profile/', () => {
-  assert.equal(profile._self.id, NAMESPACE);
+  assert.equal(_ontologyResource.id, NAMESPACE);
   assert.ok(termIris.every((iri) => iri.startsWith(NAMESPACE)));
   assert.equal(profile.hasProfilePicture.id, `${NAMESPACE}hasProfilePicture`);
   assert.equal(profile.UserAccount.id, `${NAMESPACE}UserAccount`);
   assert.equal(Prefix.getFullURI('profile'), NAMESPACE);
 });
 
-test('keeps the old namespaces and export names as deprecated aliases', () => {
-  assert.equal(profile.legacyProfilePicsNs('image').id, 'http://lincd.org/ont/profile-pics/image');
-  assert.equal(profile.legacyProfilePlusNs('deviceId').id, 'http://lincd.org/ont/profile-plus/deviceId');
-  assert.equal(pics.profilePics.hasProfilePicture, profile.hasProfilePicture);
-  assert.equal(plus.profilePlus.languagePreference, profile.languagePreference);
+test('the terms module exports only terms', () => {
+  assert.equal(termIris.length, 17);
+  assert.equal(Object.keys(profile).some((name) => /^(ns|loadData|dataFiles|_ontologyResource|profile|profilePics|profilePlus)$|^legacy/.test(name)), false);
 });
 
 test('defines every exported term and every class a shape of this package targets', async () => {
-  const defined = await definedTermsFromTurtle(await profile.loadData());
+  const defined = await definedTermsFromTurtle(await loadData());
   const targets = [...getAllNodeShapes().values()]
     .map((shape) => getTargetClassId(shape))
     .filter((iri) => iri?.startsWith(NAMESPACE));

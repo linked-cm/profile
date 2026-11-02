@@ -2,7 +2,14 @@
 
 Reusable profile Shapes, profile-picture UI, and the authenticated upload/crop backend.
 
-Every term lives in one ontology, `https://linked.cm/ont/profile/` (prefix `profile`), declared in `src/data/profile.ttl`. Before 1.0 the picture terms and `profileSetupCompleted` were on `http://lincd.org/ont/profile-pics/` and `UserAccount`, its settings and `languagePreference` on `http://lincd.org/ont/profile-plus/`; each term kept its local name, so an app with stored profiles rewrites both prefixes to the new one before upgrading. The old namespaces stay exported as the deprecated `legacyProfilePicsNs` and `legacyProfilePlusNs`.
+Every term lives in one ontology, `https://linked.cm/ont/profile/` (prefix `profile`), declared in `src/data/profile.ttl`. The accessor modules in `src/ontologies/` are generated from that Turtle by `linked generate-ontology` (`package.json` `"linkedOntologies"`); `linked build` fails when they are stale. Import the terms as a namespace:
+
+```ts
+import * as profile from '@linked.cm/profile/ontologies/profile';
+import {ns, loadData} from '@linked.cm/profile/ontologies/profile.data';
+
+profile.hasProfilePicture; // {id: 'https://linked.cm/ont/profile/hasProfilePicture'}
+```
 
 `Person` is a profile of `schema:Person` (`sharedTargetClass`): people stay `schema:Person` nodes. `UserAccount` is its own class, a subclass of `sioc:UserAccount`. Shape registration uses `@linked.cm/profile`.
 
@@ -15,8 +22,8 @@ Every term lives in one ontology, `https://linked.cm/ont/profile/` (prefix `prof
 | `@linked.cm/profile/shapes/ProfilePicture` | `ProfilePicture.crop`, a `Server.call` into the crop provider |
 | `@linked.cm/profile/components/Avatar` | Primary picture for any Person |
 | `@linked.cm/profile/components/ProfilePictureUploader` | Choose, crop, and save one of the six slots |
-| `@linked.cm/profile/ontologies/profile` | The profile ontology: every term, `profile`, `ns` |
-| `@linked.cm/profile/ontologies/profile-pics` | Deprecated: re-exports `ontologies/profile` |
+| `@linked.cm/profile/ontologies/profile` | The profile ontology's terms, one named export each |
+| `@linked.cm/profile/ontologies/profile.data` | `ns`, `dataFiles`, `loadData`, `_ontologyResource` |
 | `@linked.cm/profile/backend` | `ProfileBackendProvider` and `ProfilePictureProvider` |
 
 A Person has exactly six picture slots: `profilePicture` through `profilePicture6`. Callers cannot pass an arbitrary property name.

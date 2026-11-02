@@ -1,7 +1,8 @@
 import {literalProperty, objectProperty} from '@_linked/core/shapes/SHACL';
-import {schema} from '@_linked/schema/ontologies/schema';
+import * as schema from '@_linked/schema/ontologies/schema';
+import * as xsd from '@_linked/xsd/ontologies/xsd';
 import {Person as SchemaPerson} from '@_linked/schema/shapes/Person';
-import {profile} from '../ontologies/profile.js';
+import * as profile from '../ontologies/profile.js';
 import {linkedShape} from '../package.js';
 import {ProfilePicture} from './ProfilePicture.js';
 
@@ -39,7 +40,7 @@ export class Person extends SchemaPerson {
 
   @literalProperty({
     path: profile.profileSetupCompleted,
-    datatype: 'http://www.w3.org/2001/XMLSchema#boolean' as never,
+    datatype: xsd.boolean,
     maxCount: 1,
   })
   get profileSetupCompleted(): boolean {

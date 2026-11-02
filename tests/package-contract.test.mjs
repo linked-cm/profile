@@ -21,7 +21,7 @@ test('exports only the approved public entry points', () => {
     './components/Avatar',
     './components/ProfilePictureUploader',
     './ontologies/profile',
-    './ontologies/profile-pics',
+    './ontologies/profile.data',
     './shapes/Person',
     './shapes/ProfilePicture',
     './shapes/UserAccount',

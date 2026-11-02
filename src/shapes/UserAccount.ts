@@ -1,8 +1,8 @@
 import {literalProperty} from '@_linked/core/shapes/SHACL';
 import {UserAccount as SiocUserAccount} from '@_linked/sioc/shapes/UserAccount';
 import {Boolean as BooleanShape} from '@_linked/xsd/shapes/Boolean';
-import {xsd} from '@_linked/xsd/ontologies/xsd';
-import {profile} from '../ontologies/profile.js';
+import * as xsd from '@_linked/xsd/ontologies/xsd';
+import * as profile from '../ontologies/profile.js';
 import {linkedShape} from '../package.js';
 
 @linkedShape
