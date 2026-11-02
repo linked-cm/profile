@@ -2,7 +2,7 @@ import type React from 'react';
 
 /**
  * The six picture slots already stored on Person. Each name is the shape
- * property for an existing `profile-pics:hasProfilePicture[N]` predicate.
+ * property for an existing `profile:hasProfilePicture[N]` predicate.
  * Keeping the fixed list is what lets current triples stay readable; a
  * collection or a caller-supplied property name would not.
  */

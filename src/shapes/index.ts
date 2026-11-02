@@ -5,6 +5,7 @@
 // Side-effect imports only: no exports, components or providers. `linked create-shape`
 // maintains the list below, and `linked build` fails when a shape module is missing.
 //SHAPES
+import '../ontologies/profile.register.js';
 export * from './Person.js';
 export * from './UserAccount.js';
 export * from './ProfilePicture.js';

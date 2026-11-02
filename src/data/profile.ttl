@@ -1,0 +1,78 @@
+@prefix profile: <https://linked.cm/ont/profile/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sioc: <http://rdfs.org/sioc/ns#> .
+
+profile:
+    a owl:Ontology ;
+    dcterms:description "Reusable Linked profile shapes, profile-picture UI, and server contracts."@en ;
+    dcterms:title "Linked profile"@en .
+
+profile:ProfilePicture
+    a owl:Class ;
+    rdfs:comment "A profile picture: the uploaded image and its crop."@en .
+
+profile:ProfilePictureSet
+    a owl:Class ;
+    rdfs:comment "A set of profile pictures of one person."@en .
+
+profile:UserAccount
+    a owl:Class ;
+    rdfs:subClassOf sioc:UserAccount .
+
+profile:crop
+    a owl:ObjectProperty ;
+    rdfs:comment "The cropped image of a profile picture."@en .
+
+profile:deviceId
+    a owl:DatatypeProperty ;
+    rdfs:comment "Transitional PeaceGame device identity retained for data compatibility."@en .
+
+profile:enabledLocationServices
+    a owl:DatatypeProperty ;
+    rdfs:comment "Whether the account has location services turned on."@en .
+
+profile:enabledNotifications
+    a owl:DatatypeProperty ;
+    rdfs:comment "Whether the account has notifications turned on."@en .
+
+profile:hasProfilePicture
+    a owl:ObjectProperty ;
+    rdfs:comment "The main profile picture of a person."@en .
+
+profile:hasProfilePicture2
+    a owl:ObjectProperty ;
+    rdfs:comment "The second profile picture of a person."@en .
+
+profile:hasProfilePicture3
+    a owl:ObjectProperty ;
+    rdfs:comment "The third profile picture of a person."@en .
+
+profile:hasProfilePicture4
+    a owl:ObjectProperty ;
+    rdfs:comment "The fourth profile picture of a person."@en .
+
+profile:hasProfilePicture5
+    a owl:ObjectProperty ;
+    rdfs:comment "The fifth profile picture of a person."@en .
+
+profile:hasProfilePicture6
+    a owl:ObjectProperty ;
+    rdfs:comment "The sixth profile picture of a person."@en .
+
+profile:hasProfilePictures
+    a owl:ObjectProperty ;
+    rdfs:comment "The profile picture set of a person."@en .
+
+profile:image
+    a owl:ObjectProperty ;
+    rdfs:comment "The original (uncropped) image of a profile picture."@en .
+
+profile:languagePreference
+    a owl:DatatypeProperty ;
+    rdfs:comment "The language a person prefers the app in."@en .
+
+profile:profileSetupCompleted
+    a owl:DatatypeProperty ;
+    rdfs:comment "Whether the person has completed their profile setup."@en .

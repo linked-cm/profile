@@ -4,7 +4,11 @@ import test from 'node:test';
 import ts from 'typescript';
 
 const ontology = await readFile(
-  new URL('../src/ontologies/profile-pics.ts', import.meta.url),
+  new URL('../src/ontologies/profile.ts', import.meta.url),
+  'utf8'
+);
+const ontologyData = await readFile(
+  new URL('../src/ontologies/profile.data.ts', import.meta.url),
   'utf8'
 );
 const packageSource = await readFile(
@@ -38,8 +42,9 @@ const imageUrlModule = await import(
 );
 const {profileImageUrl} = imageUrlModule;
 
-test('preserves the production profile-pics RDF identity', () => {
-  assert.match(ontology, /http:\/\/lincd\.org\/ont\/profile-pics\//);
+test('mints every term in the one profile ontology, with no legacy namespace', () => {
+  assert.match(ontologyData, /createNameSpace\('https:\/\/linked\.cm\/ont\/profile\/'\)/);
+  assert.doesNotMatch(ontology + ontologyData, /lincd\.org|legacy/);
 });
 
 test('uses the new package identity for Shape registration', () => {
